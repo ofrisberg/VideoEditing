@@ -1,0 +1,7 @@
+/.idea*
+/.idea/vcs.xml
+/.idea/VideoEditing.iml
+/src/.idea/*
+/src/__pycache__/*
+/src/out/*
+/src/Thumbs.db
