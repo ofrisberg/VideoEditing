@@ -5,6 +5,7 @@ import webbrowser
 import youtube_dl
 from moviepy.editor import *
 from moviepy.audio.fx.audio_fadeout import audio_fadeout
+import os
 
 """
 Download mp3 from youtube
@@ -12,7 +13,7 @@ Add mp3 to final video (without audio)
 """
 
 
-def download(code, newfilename):
+def download(code):
     ydl_opts = {
         'format': 'bestaudio/best',
         'postprocessors': [{
@@ -21,7 +22,7 @@ def download(code, newfilename):
             'preferredquality': '192',
         }]
     }
-    ydl_opts['outtmpl'] = newfilename
+    ydl_opts['outtmpl'] = gen_filename()
     with youtube_dl.YoutubeDL(ydl_opts) as ydl:
         ydl.download(["https://www.youtube.com/watch?v=" + code])
 
@@ -39,7 +40,7 @@ def watch(code):
     webbrowser.open_new_tab("https://www.youtube.com/watch?v=" + code)
 
 
-def add_music(oldvideoname, newvideoname, youtube_code, audiofadeouttime=5):
+def add_music(oldvideoname, newvideoname, youtube_code="a", audiofadeouttime=5):
     videoclip = VideoFileClip(oldvideoname)
 
     tmpaudiofile = youtube_code + ".mp3"
@@ -53,11 +54,34 @@ def add_music(oldvideoname, newvideoname, youtube_code, audiofadeouttime=5):
     new_audioclip = CompositeAudioClip([new_audioclip])
     videoclip.audio = new_audioclip
     videoclip = videoclip.afx(audio_fadeout, audiofadeouttime)
-    videoclip.write_videofile(newvideoname)
+    videoclip.write_videofile(newvideoname, threads=4, progress_bar=False)
+
+
+def gen_filename():
+    i = 1
+    while True:
+        newfilename = "a" + str(i) + ".mp3"
+        if os.path.exists(newfilename) is False:
+            return newfilename
+        i += 1
+
+
+def merge_music(outputfile="a.mp3"):
+    i = 1
+    audios = []
+    while True:
+        name = "a" + str(i) + ".mp3"
+        if os.path.exists(name) is False:
+            if len(audios) > 1:
+                concat = concatenate_audioclips(audios)
+                concat.write_audiofile(outputfile)
+            return
+        audios.append(AudioFileClip(name))
+        i += 1
 
 
 if __name__ == '__main__':
-    add_music("video_final_without_audio.mp4", "video_final.mp4", "Mn9RcmkPBm4")  # knock knock
+    #add_music("video_synced_events2.mp4", "video_synced_events_a.mp4","a",audiofadeouttime=23)
 
     if False:
         query = input("Search song title and/or artist:")
@@ -65,8 +89,9 @@ if __name__ == '__main__':
         print(ytube_code)
         input("Press any key to watch in browser")
         watch(ytube_code)
-        if input("Do you want to use it? (Y/n)") == "n":
+        if input("Do you want to download it as mp3? (Y/n)") == "n":
             pass
         else:
-            newfilename = ytube_code + ".mp3"
-            download(ytube_code, newfilename)
+            download(ytube_code)
+    if True:
+        merge_music()

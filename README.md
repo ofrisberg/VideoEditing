@@ -7,6 +7,12 @@ These scripts can
 - Convert metadata to Google Earth files (kml) that can be played and recorded
 - Composite plots from data, Google Earth tour and GoPro-videos into one video
 
+## Gyro
+The three CSV columns GyroX, GyroY, GyroZ are in rad/s and oriented so that
+- Gyro X: Yaw, "tilting down flip" is positive
+- Gyro Y: Azimuth, anti-clockwise is positive
+- Gyro Z: Roll, clockwise is positive
+
 ## Dependencies
 - ffmpeg.exe
 - gpmd2csv.exe

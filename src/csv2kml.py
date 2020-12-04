@@ -46,12 +46,15 @@ def read_csv(csvfile):
             lat = row['Latitude']
             lon = row['Longitude']
             alt = row['Altitude']
-            ts = int(int(row['TS']) / 1000000)
+            ts = float(float(row['TS']) / 1000000)
+            accu = 0
+            if 'GpsAccuracy' in row:
+                accu = int(row['GpsAccuracy'])
             utc_time = datetime.fromtimestamp(ts, timezone.utc)
             local_time = utc_time.astimezone()
             dt = local_time.strftime('%Y-%m-%d %H:%M:%S')
             dt = dt.replace(' ', 'T') + 'Z'
-            if lastTs == -1 or ts - lastTs > 1:
+            if (lastTs == -1 or ts - lastTs > 1) and accu < 500:
                 res.append([lon, lat, alt, dt])
                 lastTs = ts
     return res
@@ -79,6 +82,7 @@ def create_zoom(csvfile, kmlfile, tilt=0, range=10000):
 
 
 if __name__ == "__main__":
-    pass
-    # create_zoom("video_gps.csv", "video_intro.kml", 60)
-    # csv2kml("video_gps.csv", "video_coords.kml")
+    # pass
+    create_zoom("video_gps.csv", "video_outro.kml", tilt=0, range=60000000)
+    #csv2kml("video_garmin.csv", "video_coords.kml")
+

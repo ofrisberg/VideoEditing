@@ -3,7 +3,8 @@ import sys
 import pandas
 import csv
 
-def create_csv_files(videos, doMerge, doDeleteTmpFiles = True):
+
+def create_csv_files(videos, doMerge, doDeleteTmpFiles=True):
     """
     1. Extract bin file from every video file with ffmpeg
     2. Convert bin to 4 different CSV-files (if there was 2 videos, it will not be 8 csv files) using gpmd2csv
@@ -12,7 +13,7 @@ def create_csv_files(videos, doMerge, doDeleteTmpFiles = True):
     :param doMerge:
     """
 
-    def merge_csv_files(files, newname):
+    def merge_csv_files(files, newname, one_sec_offset=False):
         if os.path.exists(newname):
             print(newname + " exists. Skipping step.")
         else:
@@ -21,13 +22,18 @@ def create_csv_files(videos, doMerge, doDeleteTmpFiles = True):
             reader = csv.reader(open(newname))  # Here your csv file
             lines = list(reader)
             lastMs = float(lines[1][0])
+            nr_switches = 0
             offset = 0.0
-            for i in range(1,len(lines)):
+            for i in range(1, len(lines)):
                 ms = float(lines[i][0]) + offset
                 if ms < lastMs:
                     offset = lastMs
                     ms = float(lines[i][0]) + offset
-                lines[i][0] = ms
+                    nr_switches += 1
+                if one_sec_offset:
+                    lines[i][0] = ms - ((nr_switches + 1)*1000)
+                else:
+                    lines[i][0] = ms
                 lastMs = ms
             writer = csv.writer(open(newname, 'w', newline=''))
             writer.writerows(lines)
@@ -66,10 +72,11 @@ def create_csv_files(videos, doMerge, doDeleteTmpFiles = True):
 
     if doMerge:
         merge_csv_files(gpsFiles, "video_gps.csv")
-        merge_csv_files(accFiles, "video_acc.csv")
-        merge_csv_files(gyroFiles, "video_gyro.csv")
+        merge_csv_files(accFiles, "video_acc.csv", one_sec_offset=True)
+        merge_csv_files(gyroFiles, "video_gyro.csv", one_sec_offset=True)
         merge_csv_files(tempFiles, "video_temp.csv")
 
+
 if __name__ == "__main__":
-    videos = ['v1', 'v2', 'v3']  # .MP4 files
+    videos = ["v1", "v2", "v3", "v4"]  # .MP4 files
     create_csv_files(videos, True, False)
